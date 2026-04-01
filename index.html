@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus</title>
+    <style>
+        :root {
+            --ios-bg: #F2F2F7;
+            --ios-card: rgba(255, 255, 255, 0.8);
+            --system-red: #FF3B30;
+            --system-blue: #007AFF;
+            --system-gray: #8E8E93;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--ios-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* The "Glass" Card */
+        .glass-card {
+            background: var(--ios-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 40px; /* Apple's signature smooth corners */
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            width: 320px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--system-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        #timer {
+            font-size: 5.5rem;
+            font-weight: 200; /* Thin weight like iOS lock screen */
+            color: #1C1C1E;
+            margin: 1rem 0 2rem 0;
+            letter-spacing: -2px;
+        }
+
+        /* Apple-style Pill Buttons */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #startBtn {
+            background-color: var(--system-red);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);
+        }
+
+        #startBtn:active {
+            transform: scale(0.97);
+            background-color: #D73229;
+        }
+
+        #resetBtn {
+            background: transparent;
+            color: var(--system-blue);
+            font-size: 0.95rem;
+        }
+
+        #resetBtn:hover {
+            background: rgba(0, 122, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-card">
+    <span id="status" class="label">Work Session</span>
+    <div id="timer">25:00</div>
+    
+    <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 1500;
+    let timerId = null;
+    let isWorkMode = true;
+
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusLabel = document.getElementById('status');
+
+    function updateDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    function toggleTimer() {
+        if (timerId) {
+            clearInterval(timerId);
+            timerId = null;
+            startBtn.textContent = 'Resume';
+            startBtn.style.opacity = "0.8";
+        } else {
+            startBtn.textContent = 'Pause';
+            startBtn.style.opacity = "1";
+            timerId = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerId);
+                    timerId = null;
+                    isWorkMode = !isWorkMode;
+                    timeLeft = isWorkMode ? 1500 : 300;
+                    statusLabel.textContent = isWorkMode ? 'Work Session' : 'Break';
+                    startBtn.style.backgroundColor = isWorkMode ? 'var(--system-red)' : 'var(--system-blue)';
+                    startBtn.textContent = 'Start';
+                    updateDisplay();
+                }
+            }, 1000);
+        }
+    }
+
+    startBtn.addEventListener('click', toggleTimer);
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        timeLeft = 1500;
+        isWorkMode = true;
+        startBtn.textContent = 'Start';
+        statusLabel.textContent = 'Work Session';
+        startBtn.style.backgroundColor = 'var(--system-red)';
+        updateDisplay();
+    });
+</script>
+
+</body>
+</html>
