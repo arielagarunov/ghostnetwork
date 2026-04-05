@@ -121,12 +121,16 @@ input.focus-goal::placeholder { color: var(--text-3); }
 
 .rank-page { width: 100%; padding: 0 28px; display: flex; flex-direction: column; }
 .rank-hero { background: var(--surface); border-radius: 24px; padding: 32px 24px; margin-bottom: 24px; }
+.rank-sup { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2.5px; color: var(--text-3); text-transform: uppercase; }
 .rank-name { font-family: 'DM Serif Display', serif; font-size: 40px; letter-spacing: -1px; margin: 4px 0; color: var(--text); }
+.rank-stat { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-2); letter-spacing: 1px; }
 .track-bg { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin: 12px 0; }
 .track-fill { height: 100%; background: var(--text); transition: width 1s ease; width: 0%; }
+.rank-next { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; color: var(--text-3); text-transform: uppercase; }
 
-.ladder-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); opacity: 0.2; }
-.ladder-row.lit { opacity: 1; }
+.ladder-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--text-3); text-transform: uppercase; margin-bottom: 12px; }
+.ladder-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); opacity: 0.2; transition: opacity 0.3s; }
+.ladder-row.lit { opacity: 1 !important; }
 
 .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 200; flex-direction: column; justify-content: center; align-items: center; }
 .settings-inner { width: calc(100% - 56px); max-width: 320px; }
@@ -225,8 +229,10 @@ const RANKS = [
   { name: "Apprentice", min: 250 },
   { name: "Practitioner", min: 1000 },
   { name: "Scholar", min: 2500 },
-  { name: "Master", min: 5000 },
-  { name: "Enlightened", min: 10000 }
+  { name: "Artisan", min: 5000 },
+  { name: "Master", min: 10000 },
+  { name: "Sage", min: 25000 },
+  { name: "Enlightened", min: 50000 }
 ];
 
 let times = { work: 25 };
@@ -234,7 +240,7 @@ let timeLeft = 25 * 60;
 let timerId = null;
 let isRunning = false;
 let currentUser = null;
-const CIRCUMFERENCE = 597; // 2 * PI * 95
+const CIRCUMFERENCE = 597;
 
 window.switchTab = (tab, el) => {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
@@ -264,6 +270,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadUserData() {
+  if (!currentUser) return;
   const userRef = doc(db, "users", currentUser.uid);
   const snap = await getDoc(userRef);
   if (snap.exists()) {
@@ -276,7 +283,9 @@ async function loadUserData() {
 
 function updateRankUI(totalMins) {
   let idx = 0;
-  for (let i = 0; i < RANKS.length; i++) { if (totalMins >= RANKS[i].min) idx = i; }
+  for (let i = 0; i < RANKS.length; i++) { 
+    if (totalMins >= RANKS[i].min) idx = i; 
+  }
   const cur = RANKS[idx];
   const nxt = RANKS[idx + 1] || null;
   
@@ -296,12 +305,18 @@ function updateRankUI(totalMins) {
   }
 
   const room = document.getElementById('rank-trophy-room');
-  room.innerHTML = RANKS.map(r => `
-    <div class="ladder-row ${totalMins >= r.min ? 'lit' : ''}">
-      <span style="font-family:'DM Serif Display'; font-size:18px;">${r.name}</span>
+  room.innerHTML = ''; 
+  
+  RANKS.forEach(r => {
+    const isUnlocked = totalMins >= r.min;
+    const row = document.createElement('div');
+    row.className = `ladder-row ${isUnlocked ? 'lit' : ''}`;
+    row.innerHTML = `
+      <span style="font-family:'DM Serif Display'; font-size:18px; color:var(--text);">${r.name}</span>
       <span style="font-family:'DM Mono'; font-size:10px; color:var(--text-3);">${r.min} min</span>
-    </div>
-  `).join('');
+    `;
+    room.appendChild(row);
+  });
 }
 
 document.getElementById('start-btn').onclick = () => {
