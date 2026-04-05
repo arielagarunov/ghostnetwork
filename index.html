@@ -12,16 +12,16 @@
         :root {
             --bg: #ffffff;
             --text: #000000;
-            --accent: #000000;
             --secondary: #f0f0f0;
+            --overlay: rgba(255, 255, 255, 0.9);
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg: #000000;
                 --text: #ffffff;
-                --accent: #ffffff;
                 --secondary: #1a1a1a;
+                --overlay: rgba(0, 0, 0, 0.9);
             }
         }
 
@@ -34,112 +34,97 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; margin: 0; transition: background 0.4s ease;
             overflow: hidden;
+            user-select: none;
         }
+
+        /* Settings Panel Overlay */
+        #settings-panel {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .setting-row { margin: 15px 0; font-size: 18px; width: 250px; display: flex; justify-content: space-between; align-items: center; }
+        .setting-row input { background: var(--secondary); color: var(--text); border: none; padding: 10px; width: 70px; border-radius: 8px; text-align: center; font-size: 16px; }
 
         .timer-container {
             position: relative;
-            width: 280px;
-            height: 280px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 300px; height: 300px;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* SVG Progress Ring */
-        svg {
-            position: absolute;
-            transform: rotate(-90deg);
-        }
-
-        circle {
-            fill: none;
-            stroke-width: 4;
-            stroke-linecap: round;
-        }
-
+        svg { position: absolute; transform: rotate(-90deg); }
+        circle { fill: none; stroke-width: 4; stroke-linecap: round; }
         .bg-circle { stroke: var(--secondary); }
         .progress-circle {
-            stroke: var(--accent);
-            stroke-dasharray: 754; /* 2 * PI * r */
+            stroke: var(--text);
+            stroke-dasharray: 754; 
             stroke-dashoffset: 0;
             transition: stroke-dashoffset 1s linear;
         }
 
-        .timer-display {
-            font-size: 64px;
-            font-weight: 300;
-            letter-spacing: -2px;
-            font-variant-numeric: tabular-nums;
+        /* Pulse Animation for last 60s */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
         }
+        .pulsing { animation: pulse 2s infinite ease-in-out; }
 
-        .controls { margin-top: 40px; text-align: center; }
+        .timer-display { font-size: 64px; font-weight: 200; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
 
         .main-btn {
-            background: var(--text);
-            color: var(--bg);
-            border: none;
-            padding: 12px 48px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            margin-top: 40px; background: var(--text); color: var(--bg);
+            border: none; padding: 14px 50px; font-size: 16px; font-weight: 600;
+            border-radius: 30px; cursor: pointer; letter-spacing: 1px;
         }
 
-        .main-btn:active { opacity: 0.7; }
+        .stats-box { position: absolute; bottom: 80px; font-size: 11px; opacity: 0.5; letter-spacing: 1px; }
+        
+        .top-nav { position: absolute; top: 60px; width: 100%; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-btn { background: none; border: none; color: var(--text); font-size: 14px; cursor: pointer; opacity: 0.6; }
 
-        .stats-box {
-            position: absolute;
-            bottom: 60px;
-            font-size: 12px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            opacity: 0.5;
-            display: none;
-        }
-
-        #auth-btn {
-            position: absolute;
-            bottom: 30px;
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 11px;
-            text-decoration: underline;
-            opacity: 0.4;
-            cursor: pointer;
-        }
-
-        #user-greet {
-            position: absolute;
-            top: 60px;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.8;
-        }
+        #auth-btn { position: absolute; bottom: 40px; background: none; border: none; color: var(--text); font-size: 11px; text-decoration: underline; opacity: 0.3; }
     </style>
 </head>
 <body>
 
-    <div id="user-greet"></div>
+    <div id="settings-panel">
+        <h2>Settings</h2>
+        <div class="setting-row"><span>Focus</span><input type="number" id="work-in" value="25"></div>
+        <div class="setting-row"><span>Short Break</span><input type="number" id="short-in" value="5"></div>
+        <div class="setting-row"><span>Long Break</span><input type="number" id="long-in" value="15"></div>
+        <button class="main-btn" onclick="saveSettings()">Apply</button>
+    </div>
 
-    <div class="timer-container">
+    <div class="top-nav">
+        <div id="user-greet" style="font-weight: 600; font-size: 12px; letter-spacing: 1px;">ZENSTUDY</div>
+        <button class="nav-btn" onclick="toggleSettings()">⚙️</button>
+    </div>
+
+    <div class="timer-container" id="timer-ring">
         <svg width="260" height="260">
             <circle class="bg-circle" cx="130" cy="130" r="120"></circle>
             <circle id="progress" class="progress-circle" cx="130" cy="130" r="120"></circle>
         </svg>
-        <div class="timer-display" id="timer">25:00</div>
+        <div class="timer-display" id="timer-text">25:00</div>
     </div>
 
-    <div class="controls">
-        <button class="main-btn" id="start-btn">START</button>
-    </div>
+    <button class="main-btn" id="start-btn">START</button>
 
-    <div class="stats-box" id="stats-box">
-        Total: <span id="total-min">0</span> mins
+    <div class="stats-box" id="stats-box" style="display: none;">
+        TOTAL FOCUS: <span id="total-min">0</span> MINS
     </div>
 
     <button id="auth-btn">Sign in with Google</button>
+
+    <audio id="alarm" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -160,31 +145,28 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        let WORK_TIME = 25 * 60;
-        let timeLeft = WORK_TIME;
+        let times = { work: 25, short: 5, long: 15 };
+        let timeLeft = times.work * 60;
         let timerId = null;
         let isRunning = false;
         let currentUser = null;
 
         const circle = document.getElementById('progress');
-        const radius = circle.r.baseVal.value;
-        const circumference = 2 * Math.PI * radius;
+        const circumference = 2 * Math.PI * 120;
 
-        // Auth Logic
-        document.getElementById('auth-btn').onclick = () => {
-            !currentUser ? signInWithPopup(auth, provider) : signOut(auth);
-        };
+        // --- AUTH ---
+        document.getElementById('auth-btn').onclick = () => { !currentUser ? signInWithPopup(auth, provider) : signOut(auth); };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('auth-btn').textContent = "Sign Out";
+                document.getElementById('auth-btn').textContent = "SIGN OUT";
                 document.getElementById('stats-box').style.display = "block";
-                document.getElementById('user-greet').textContent = user.displayName.toUpperCase();
+                document.getElementById('user-greet').textContent = user.displayName.toUpperCase().split(' ')[0];
                 loadStats();
             } else {
                 currentUser = null;
-                document.getElementById('auth-btn').textContent = "Sign in with Google";
+                document.getElementById('auth-btn').textContent = "SIGN IN WITH GOOGLE";
                 document.getElementById('stats-box').style.display = "none";
                 document.getElementById('user-greet').textContent = "ZENSTUDY";
             }
@@ -193,48 +175,68 @@
         async function loadStats() {
             const snap = await getDoc(doc(db, "users", currentUser.uid));
             if (snap.exists()) document.getElementById('total-min').textContent = snap.data().totalMinutes || 0;
+            else await setDoc(doc(db, "users", currentUser.uid), { totalMinutes: 0 });
         }
 
-        // Timer Logic
-        document.getElementById('start-btn').onclick = () => {
-            if (isRunning) {
-                clearInterval(timerId);
-                isRunning = false;
-                document.getElementById('start-btn').textContent = "START";
-            } else {
-                isRunning = true;
-                document.getElementById('start-btn').textContent = "PAUSE";
-                timerId = setInterval(async () => {
-                    timeLeft--;
-                    updateUI();
-                    if (timeLeft <= 0) {
-                        clearInterval(timerId);
-                        if (currentUser) {
-                            await updateDoc(doc(db, "users", currentUser.uid), { totalMinutes: increment(25) });
-                            loadStats();
-                        }
-                        alert("Focus complete.");
-                        resetTimer();
-                    }
-                }, 1000);
-            }
+        // --- SETTINGS ---
+        window.toggleSettings = () => {
+            const p = document.getElementById('settings-panel');
+            p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
         };
+
+        window.saveSettings = () => {
+            times.work = document.getElementById('work-in').value;
+            times.short = document.getElementById('short-in').value;
+            times.long = document.getElementById('long-in').value;
+            resetTimer();
+            toggleSettings();
+        };
+
+        // --- TIMER ---
+        document.getElementById('start-btn').onclick = () => {
+            if (isRunning) { stopTimer(); } 
+            else { startTimer(); }
+        };
+
+        function startTimer() {
+            isRunning = true;
+            document.getElementById('start-btn').textContent = "PAUSE";
+            timerId = setInterval(async () => {
+                timeLeft--;
+                updateUI();
+                if (timeLeft <= 60) document.getElementById('timer-ring').classList.add('pulsing');
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    document.getElementById('alarm').play();
+                    if (currentUser) {
+                        await updateDoc(doc(db, "users", currentUser.uid), { totalMinutes: increment(parseInt(times.work)) });
+                        loadStats();
+                    }
+                    alert("Focus period complete.");
+                    resetTimer();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerId);
+            isRunning = false;
+            document.getElementById('start-btn').textContent = "START";
+            document.getElementById('timer-ring').classList.remove('pulsing');
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timeLeft = times.work * 60;
+            updateUI();
+        }
 
         function updateUI() {
             const m = Math.floor(timeLeft / 60);
             const s = timeLeft % 60;
-            document.getElementById('timer').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
-            
-            // Circular Animation
-            const offset = circumference - (timeLeft / WORK_TIME) * circumference;
+            document.getElementById('timer-text').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+            const offset = circumference - (timeLeft / (times.work * 60)) * circumference;
             circle.style.strokeDashoffset = offset;
-        }
-
-        function resetTimer() {
-            timeLeft = WORK_TIME;
-            isRunning = false;
-            document.getElementById('start-btn').textContent = "START";
-            updateUI();
         }
 
         updateUI();
