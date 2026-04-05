@@ -33,7 +33,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             min-height: 100vh; margin: 0; transition: background 0.4s ease;
-            padding-top: calc(80px + env(safe-area-inset-top));
+            padding-top: calc(60px + env(safe-area-inset-top));
             user-select: none;
             overflow-y: auto;
         }
@@ -53,8 +53,7 @@
         .setting-row { margin: 15px 0; font-size: 18px; width: 250px; display: flex; justify-content: space-between; align-items: center; }
         .setting-row input { background: var(--secondary); color: var(--text); border: none; padding: 10px; width: 70px; border-radius: 8px; text-align: center; font-size: 16px; }
 
-        /* Session Name Input */
-        .session-header { margin-bottom: 20px; width: 80%; max-width: 300px; opacity: 0.6; }
+        .session-header { margin-bottom: 10px; width: 80%; max-width: 300px; opacity: 0.6; }
         #session-name {
             background: none; border: none; border-bottom: 1px solid var(--secondary);
             color: var(--text); text-align: center; font-size: 14px; width: 100%; padding: 8px;
@@ -63,7 +62,7 @@
 
         .timer-container {
             position: relative;
-            width: 280px; height: 280px;
+            width: 260px; height: 260px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
@@ -88,31 +87,38 @@
         .timer-display { font-size: 64px; font-weight: 200; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
 
         .main-btn {
-            margin-top: 30px; background: var(--text); color: var(--bg);
+            margin-top: 20px; background: var(--text); color: var(--bg);
             border: none; padding: 14px 50px; font-size: 16px; font-weight: 600;
             border-radius: 30px; cursor: pointer; letter-spacing: 1px;
-            flex-shrink: 0;
         }
 
-        /* Task List Styling */
-        .task-section { margin-top: 40px; width: 85%; max-width: 300px; padding-bottom: 100px; }
+        /* Habit Tracker Styles */
+        .habit-tracker { margin-top: 30px; width: 85%; max-width: 280px; text-align: center; }
+        .streak-label { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; }
+        .heatmap { 
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; 
+            padding: 8px; background: var(--secondary); border-radius: 8px; 
+        }
+        .heat-square { width: 100%; aspect-ratio: 1; background: var(--text); border-radius: 2px; opacity: 0.05; transition: opacity 0.3s; }
+        .level-1 { opacity: 0.3; }
+        .level-2 { opacity: 0.6; }
+        .level-3 { opacity: 1; }
+
+        .task-section { margin-top: 30px; width: 85%; max-width: 300px; padding-bottom: 100px; }
         #task-input {
             background: var(--secondary); border: none; color: var(--text);
-            width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; outline: none;
+            width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; outline: none;
         }
-        #task-list { list-style: none; padding: 0; margin-top: 20px; }
+        #task-list { list-style: none; padding: 0; margin-top: 15px; }
         .task-item {
-            display: flex; align-items: center; padding: 12px 0;
-            font-size: 15px; border-bottom: 1px solid var(--secondary);
-            cursor: pointer; transition: opacity 0.2s;
+            display: flex; align-items: center; padding: 10px 0;
+            font-size: 14px; border-bottom: 1px solid var(--secondary);
+            cursor: pointer;
         }
         .task-item.completed { text-decoration: line-through; opacity: 0.3; }
 
-        .stats-box { margin-top: 20px; font-size: 11px; opacity: 0.4; letter-spacing: 1px; text-align: center; }
-        
         .top-nav { position: absolute; top: calc(20px + env(safe-area-inset-top)); width: 100%; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; }
         .nav-btn { background: none; border: none; color: var(--text); font-size: 14px; cursor: pointer; opacity: 0.6; }
-
         #auth-btn { margin: 20px 0; background: none; border: none; color: var(--text); font-size: 11px; text-decoration: underline; opacity: 0.3; cursor: pointer; }
     </style>
 </head>
@@ -121,8 +127,8 @@
     <div id="settings-panel">
         <h2>Settings</h2>
         <div class="setting-row"><span>Focus</span><input type="number" id="work-in" value="25"></div>
-        <div class="setting-row"><span>Short Break</span><input type="number" id="short-in" value="5"></div>
-        <div class="setting-row"><span>Long Break</span><input type="number" id="long-in" value="15"></div>
+        <div class="setting-row"><span>Short</span><input type="number" id="short-in" value="5"></div>
+        <div class="setting-row"><span>Long</span><input type="number" id="long-in" value="15"></div>
         <button class="main-btn" onclick="saveSettings()">Apply</button>
     </div>
 
@@ -132,30 +138,30 @@
     </div>
 
     <div class="session-header">
-        <input type="text" id="session-name" placeholder="What are you focusing on?" maxlength="30">
+        <input type="text" id="session-name" placeholder="FOCUS GOAL" maxlength="30">
     </div>
 
     <div class="timer-container" id="timer-ring">
-        <svg width="260" height="260">
-            <circle class="bg-circle" cx="130" cy="130" r="120"></circle>
-            <circle id="progress" class="progress-circle" cx="130" cy="130" r="120"></circle>
+        <svg width="240" height="240">
+            <circle class="bg-circle" cx="120" cy="120" r="110"></circle>
+            <circle id="progress" class="progress-circle" cx="120" cy="120" r="110"></circle>
         </svg>
         <div class="timer-display" id="timer-text">25:00</div>
     </div>
 
     <button class="main-btn" id="start-btn">START</button>
 
+    <div class="habit-tracker" id="habit-tracker" style="display: none;">
+        <div class="streak-label"><span id="streak-num">0</span> DAY STREAK</div>
+        <div class="heatmap" id="heatmap"></div>
+    </div>
+
     <div class="task-section">
         <input type="text" id="task-input" placeholder="Add a task...">
         <ul id="task-list"></ul>
     </div>
 
-    <div class="stats-box" id="stats-box" style="display: none;">
-        TOTAL FOCUS: <span id="total-min">0</span> MINS
-    </div>
-
     <button id="auth-btn">Sign in with Google</button>
-
     <audio id="alarm" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
     <script type="module">
@@ -184,13 +190,12 @@
         let currentUser = null;
 
         const circle = document.getElementById('progress');
-        const circumference = 2 * Math.PI * 120;
+        const circumference = 2 * Math.PI * 110;
 
         // --- TASKS ---
         const taskInput = document.getElementById('task-input');
         const taskList = document.getElementById('task-list');
-
-        taskInput.addEventListener('keypress', (e) => {
+        taskInput.onkeypress = (e) => {
             if (e.key === 'Enter' && taskInput.value.trim() !== "") {
                 const li = document.createElement('li');
                 li.className = 'task-item';
@@ -199,7 +204,7 @@
                 taskList.prepend(li);
                 taskInput.value = "";
             }
-        });
+        };
 
         // --- AUTH ---
         document.getElementById('auth-btn').onclick = () => { !currentUser ? signInWithPopup(auth, provider) : signOut(auth); };
@@ -207,42 +212,48 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('auth-btn').textContent = "SIGN OUT";
-                document.getElementById('stats-box').style.display = "block";
-                document.getElementById('user-greet').textContent = user.displayName.toUpperCase().split(' ')[0];
-                loadStats();
+                document.getElementById('auth-btn').textContent = "LOGOUT";
+                document.getElementById('habit-tracker').style.display = "block";
+                document.getElementById('user-greet').textContent = user.displayName.split(' ')[0].toUpperCase();
+                loadUserData();
             } else {
                 currentUser = null;
                 document.getElementById('auth-btn').textContent = "SIGN IN WITH GOOGLE";
-                document.getElementById('stats-box').style.display = "none";
+                document.getElementById('habit-tracker').style.display = "none";
                 document.getElementById('user-greet').textContent = "ZENSTUDY";
             }
         });
 
-        async function loadStats() {
+        async function loadUserData() {
             const snap = await getDoc(doc(db, "users", currentUser.uid));
-            if (snap.exists()) document.getElementById('total-min').textContent = snap.data().totalMinutes || 0;
-            else await setDoc(doc(db, "users", currentUser.uid), { totalMinutes: 0 });
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('streak-num').textContent = data.currentStreak || 0;
+                renderHeatmap(data.history || {});
+            } else {
+                await setDoc(doc(db, "users", currentUser.uid), { totalMinutes: 0, currentStreak: 0, history: {} });
+            }
         }
 
-        // --- SETTINGS ---
-        window.toggleSettings = () => {
-            const p = document.getElementById('settings-panel');
-            p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
-        };
-
-        window.saveSettings = () => {
-            times.work = document.getElementById('work-in').value;
-            times.short = document.getElementById('short-in').value;
-            times.long = document.getElementById('long-in').value;
-            resetTimer();
-            toggleSettings();
-        };
+        function renderHeatmap(history) {
+            const heatmap = document.getElementById('heatmap');
+            heatmap.innerHTML = '';
+            for (let i = 27; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = d.toISOString().split('T')[0];
+                const mins = history[dateStr] || 0;
+                const square = document.createElement('div');
+                square.className = 'heat-square';
+                if (mins > 0) square.classList.add('level-1');
+                if (mins > 45) square.classList.add('level-2');
+                if (mins > 90) square.classList.add('level-3');
+                heatmap.appendChild(square);
+            }
+        }
 
         // --- TIMER ---
-        document.getElementById('start-btn').onclick = () => {
-            isRunning ? stopTimer() : startTimer();
-        };
+        document.getElementById('start-btn').onclick = () => { isRunning ? stopTimer() : startTimer(); };
 
         function startTimer() {
             isRunning = true;
@@ -254,18 +265,33 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
                     document.getElementById('alarm').play();
-                    if (currentUser) {
-                        const sName = document.getElementById('session-name').value || "Untitled Session";
-                        await updateDoc(doc(db, "users", currentUser.uid), { 
-                            totalMinutes: increment(parseInt(times.work)),
-                            lastSession: sName
-                        });
-                        loadStats();
-                    }
-                    alert("Focus complete.");
+                    if (currentUser) await syncCompletion();
+                    alert("Focus session complete.");
                     resetTimer();
                 }
             }, 1000);
+        }
+
+        async function syncCompletion() {
+            const userRef = doc(db, "users", currentUser.uid);
+            const snap = await getDoc(userRef);
+            const data = snap.data();
+            const today = new Date().toISOString().split('T')[0];
+            let newStreak = data.currentStreak || 0;
+
+            if (data.lastActiveDate !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                newStreak = (data.lastActiveDate === yesterday.toISOString().split('T')[0]) ? newStreak + 1 : 1;
+            }
+
+            await updateDoc(userRef, {
+                totalMinutes: increment(parseInt(times.work)),
+                lastActiveDate: today,
+                currentStreak: newStreak,
+                [`history.${today}`]: increment(parseInt(times.work))
+            });
+            loadUserData();
         }
 
         function stopTimer() {
@@ -285,9 +311,21 @@
             const m = Math.floor(timeLeft / 60);
             const s = timeLeft % 60;
             document.getElementById('timer-text').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
-            const offset = circumference - (timeLeft / (times.work * 60)) * circumference;
-            circle.style.strokeDashoffset = offset;
+            circle.style.strokeDashoffset = circumference - (timeLeft / (times.work * 60)) * circumference;
         }
+
+        window.toggleSettings = () => {
+            const p = document.getElementById('settings-panel');
+            p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
+        };
+
+        window.saveSettings = () => {
+            times.work = document.getElementById('work-in').value;
+            times.short = document.getElementById('short-in').value;
+            times.long = document.getElementById('long-in').value;
+            resetTimer();
+            toggleSettings();
+        };
 
         updateUI();
     </script>
