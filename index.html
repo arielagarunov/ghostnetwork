@@ -16,6 +16,7 @@
             --bg: #ffffff;
             --text: #000000;
             --secondary: #f0f0f0;
+            --accent: #888888;
             --overlay: rgba(255, 255, 255, 0.9);
         }
 
@@ -24,6 +25,7 @@
                 --bg: #000000;
                 --text: #ffffff;
                 --secondary: #1a1a1a;
+                --accent: #444444;
                 --overlay: rgba(0, 0, 0, 0.9);
             }
         }
@@ -34,136 +36,99 @@
             background-color: var(--bg);
             color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            min-height: 100vh; margin: 0; transition: background 0.4s ease;
-            padding-top: calc(60px + env(safe-area-inset-top));
-            user-select: none;
-            overflow-y: auto;
+            margin: 0; padding: 0;
+            height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        #settings-panel {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--overlay);
-            z-index: 100;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
+        /* Navigation */
+        .tab-content { 
+            flex: 1; display: none; flex-direction: column; align-items: center; 
+            padding-top: calc(60px + env(safe-area-inset-top)); 
+            overflow-y: auto; width: 100%;
         }
+        .active-tab { display: flex; }
 
-        .setting-row { margin: 15px 0; font-size: 18px; width: 250px; display: flex; justify-content: space-between; align-items: center; }
-        .setting-row input { background: var(--secondary); color: var(--text); border: none; padding: 10px; width: 70px; border-radius: 8px; text-align: center; font-size: 16px; }
-
-        .session-header { margin-bottom: 10px; width: 80%; max-width: 300px; opacity: 0.6; }
-        #session-name {
-            background: none; border: none; border-bottom: 1px solid var(--secondary);
-            color: var(--text); text-align: center; font-size: 14px; width: 100%; padding: 8px;
-            outline: none; text-transform: uppercase; letter-spacing: 1px;
+        .bottom-nav {
+            height: calc(70px + env(safe-area-inset-bottom));
+            background: var(--bg); border-top: 1px solid var(--secondary);
+            display: flex; justify-content: space-around; align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 50;
         }
+        .nav-item { background: none; border: none; color: var(--text); opacity: 0.3; font-size: 11px; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { opacity: 1; }
 
-        .timer-container {
-            position: relative;
-            width: 260px; height: 260px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-
+        /* Timer Styles */
+        .timer-container { position: relative; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; margin: 20px 0; }
         svg { position: absolute; transform: rotate(-90deg); }
         circle { fill: none; stroke-width: 4; stroke-linecap: round; }
         .bg-circle { stroke: var(--secondary); }
-        .progress-circle {
-            stroke: var(--text);
-            stroke-dasharray: 754; 
-            stroke-dashoffset: 0;
-            transition: stroke-dashoffset 1s linear;
-        }
+        .progress-circle { stroke: var(--text); stroke-dasharray: 754; transition: stroke-dashoffset 1s linear; }
+        .timer-display { font-size: 64px; font-weight: 200; letter-spacing: -2px; }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.03); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .pulsing { animation: pulse 2s infinite ease-in-out; }
+        /* Progress Styles */
+        .rank-card { width: 85%; max-width: 350px; background: var(--secondary); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        .current-rank-name { font-size: 24px; font-weight: 800; letter-spacing: 2px; margin-bottom: 10px; }
+        .progress-bar-bg { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; margin: 15px 0; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--text); width: 0%; transition: width 1s ease; }
+        
+        .rank-list { width: 85%; max-width: 350px; padding-bottom: 40px; }
+        .rank-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--secondary); opacity: 0.3; font-size: 13px; }
+        .rank-item.unlocked { opacity: 1; font-weight: 600; }
 
-        .timer-display { font-size: 64px; font-weight: 200; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+        /* Standard Elements */
+        .main-btn { background: var(--text); color: var(--bg); border: none; padding: 14px 50px; font-size: 15px; font-weight: 600; border-radius: 30px; cursor: pointer; margin: 10px; }
+        .session-header input { background: none; border: none; border-bottom: 1px solid var(--secondary); color: var(--text); text-align: center; font-size: 14px; width: 250px; padding: 8px; outline: none; text-transform: uppercase; }
+        .task-section { width: 85%; max-width: 300px; margin-top: 20px; }
+        #task-input { background: var(--secondary); border: none; color: var(--text); width: 100%; padding: 12px; border-radius: 10px; outline: none; }
+        #task-list { list-style: none; padding: 0; }
+        .task-item { padding: 10px 0; border-bottom: 1px solid var(--secondary); font-size: 14px; }
+        .completed { text-decoration: line-through; opacity: 0.3; }
 
-        .main-btn {
-            margin-top: 20px; background: var(--text); color: var(--bg);
-            border: none; padding: 14px 50px; font-size: 16px; font-weight: 600;
-            border-radius: 30px; cursor: pointer; letter-spacing: 1px;
-        }
-
-        .habit-tracker { margin-top: 30px; width: 85%; max-width: 280px; text-align: center; }
-        .streak-label { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 8px; }
-        .heatmap { 
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; 
-            padding: 8px; background: var(--secondary); border-radius: 8px; 
-        }
-        .heat-square { width: 100%; aspect-ratio: 1; background: var(--text); border-radius: 2px; opacity: 0.05; transition: opacity 0.3s; }
-        .level-1 { opacity: 0.3; }
-        .level-2 { opacity: 0.6; }
-        .level-3 { opacity: 1; }
-
-        .task-section { margin-top: 30px; width: 85%; max-width: 300px; padding-bottom: 100px; }
-        #task-input {
-            background: var(--secondary); border: none; color: var(--text);
-            width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; outline: none;
-        }
-        #task-list { list-style: none; padding: 0; margin-top: 15px; }
-        .task-item {
-            display: flex; align-items: center; padding: 10px 0;
-            font-size: 14px; border-bottom: 1px solid var(--secondary);
-            cursor: pointer;
-        }
-        .task-item.completed { text-decoration: line-through; opacity: 0.3; }
-
-        .top-nav { position: absolute; top: calc(20px + env(safe-area-inset-top)); width: 100%; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-btn { background: none; border: none; color: var(--text); font-size: 14px; cursor: pointer; opacity: 0.6; }
-        #auth-btn { margin: 20px 0; background: none; border: none; color: var(--text); font-size: 11px; text-decoration: underline; opacity: 0.3; cursor: pointer; }
+        #settings-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); z-index: 100; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
     </style>
 </head>
 <body>
 
     <div id="settings-panel">
         <h2>Settings</h2>
-        <div class="setting-row"><span>Focus</span><input type="number" id="work-in" value="25"></div>
-        <div class="setting-row"><span>Short</span><input type="number" id="short-in" value="5"></div>
-        <div class="setting-row"><span>Long</span><input type="number" id="long-in" value="15"></div>
-        <button class="main-btn" onclick="saveSettings()">Apply</button>
+        <div style="margin:10px">Focus: <input type="number" id="work-in" value="25" style="width:50px"></div>
+        <button class="main-btn" onclick="toggleSettings()">Apply</button>
+        <button id="auth-btn" style="background:none; border:none; text-decoration:underline; color:var(--text); margin-top:20px">Sign Out</button>
     </div>
 
-    <div class="top-nav">
-        <div id="user-greet" style="font-weight: 600; font-size: 12px; letter-spacing: 1px;">ZENSTUDY</div>
-        <button class="nav-btn" onclick="toggleSettings()">⚙️</button>
+    <div id="tab-timer" class="tab-content active-tab">
+        <div class="session-header"><input type="text" id="session-name" placeholder="FOCUS GOAL"></div>
+        <div class="timer-container">
+            <svg width="240" height="240"><circle class="bg-circle" cx="120" cy="120" r="110"></circle><circle id="progress" class="progress-circle" cx="120" cy="120" r="110"></circle></svg>
+            <div class="timer-display" id="timer-text">25:00</div>
+        </div>
+        <button class="main-btn" id="start-btn">START</button>
+        <div class="task-section">
+            <input type="text" id="task-input" placeholder="Add a task...">
+            <ul id="task-list"></ul>
+        </div>
     </div>
 
-    <div class="session-header">
-        <input type="text" id="session-name" placeholder="FOCUS GOAL" maxlength="30">
+    <div id="tab-progress" class="tab-content">
+        <div class="rank-card">
+            <div id="rank-display-name" class="current-rank-name">SEEKER</div>
+            <div style="font-size: 11px; opacity: 0.6;">TOTAL TIME: <span id="stat-total-mins">0</span> MINS</div>
+            <div class="progress-bar-bg"><div id="rank-progress-fill" class="progress-bar-fill"></div></div>
+            <div id="next-rank-info" style="font-size: 10px; opacity: 0.5;">250 MINS TO NEXT RANK</div>
+        </div>
+        
+        <div class="rank-list" id="rank-trophy-room">
+            </div>
     </div>
 
-    <div class="timer-container" id="timer-ring">
-        <svg width="240" height="240">
-            <circle class="bg-circle" cx="120" cy="120" r="110"></circle>
-            <circle id="progress" class="progress-circle" cx="120" cy="120" r="110"></circle>
-        </svg>
-        <div class="timer-display" id="timer-text">25:00</div>
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('timer')">FOCUS</button>
+        <button class="nav-item" onclick="switchTab('progress')">RANK</button>
+        <button class="nav-item" onclick="toggleSettings()">SETTINGS</button>
     </div>
 
-    <button class="main-btn" id="start-btn">START</button>
-
-    <div class="habit-tracker" id="habit-tracker" style="display: none;">
-        <div class="streak-label"><span id="streak-num">0</span> DAY STREAK</div>
-        <div class="heatmap" id="heatmap"></div>
-    </div>
-
-    <div class="task-section">
-        <input type="text" id="task-input" placeholder="Add a task...">
-        <ul id="task-list"></ul>
-    </div>
-
-    <button id="auth-btn">Sign in with Google</button>
     <audio id="alarm" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
     <script type="module">
@@ -185,125 +150,113 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        let times = { work: 25, short: 5, long: 15 };
-        let timeLeft = times.work * 60;
+        const RANKS = [
+            { name: "SEEKER", min: 0 },
+            { name: "APPRENTICE", min: 250 },
+            { name: "PRACTITIONER", min: 1000 },
+            { name: "SCHOLAR", min: 2500 },
+            { name: "MASTER", min: 5000 },
+            { name: "ENLIGHTENED", min: 10000 }
+        ];
+
+        let times = { work: 25 };
+        let timeLeft = 25 * 60;
         let timerId = null;
         let isRunning = false;
         let currentUser = null;
 
-        const circle = document.getElementById('progress');
-        const circumference = 2 * Math.PI * 110;
-
-        // Task Logic
-        const taskInput = document.getElementById('task-input');
-        const taskList = document.getElementById('task-list');
-        taskInput.onkeypress = (e) => {
-            if (e.key === 'Enter' && taskInput.value.trim() !== "") {
-                const li = document.createElement('li');
-                li.className = 'task-item';
-                li.textContent = taskInput.value;
-                li.onclick = () => li.classList.toggle('completed');
-                taskList.prepend(li);
-                taskInput.value = "";
-            }
+        // --- TAB SYSTEM ---
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active-tab');
+            event.currentTarget.classList.add('active');
         };
 
-        // Auth Logic
+        // --- AUTH ---
         document.getElementById('auth-btn').onclick = () => { !currentUser ? signInWithPopup(auth, provider) : signOut(auth); };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('auth-btn').textContent = "LOGOUT";
-                document.getElementById('habit-tracker').style.display = "block";
-                document.getElementById('user-greet').textContent = user.displayName.split(' ')[0].toUpperCase();
                 loadUserData();
             } else {
                 currentUser = null;
-                document.getElementById('auth-btn').textContent = "SIGN IN WITH GOOGLE";
-                document.getElementById('habit-tracker').style.display = "none";
-                document.getElementById('user-greet').textContent = "ZENSTUDY";
+                signInWithPopup(auth, provider);
             }
         });
 
         async function loadUserData() {
             const snap = await getDoc(doc(db, "users", currentUser.uid));
             if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById('streak-num').textContent = data.currentStreak || 0;
-                renderHeatmap(data.history || {});
+                updateRankUI(snap.data().totalMinutes || 0);
+            } else {
+                await setDoc(doc(db, "users", currentUser.uid), { totalMinutes: 0 });
             }
         }
 
-        function renderHeatmap(history) {
-            const heatmap = document.getElementById('heatmap');
-            heatmap.innerHTML = '';
-            for (let i = 27; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0];
-                const mins = history[dateStr] || 0;
-                const square = document.createElement('div');
-                square.className = 'heat-square';
-                if (mins > 0) square.classList.add('level-1');
-                if (mins > 45) square.classList.add('level-2');
-                if (mins > 90) square.classList.add('level-3');
-                heatmap.appendChild(square);
-            }
-        }
-
-        // Timer Logic
-        document.getElementById('start-btn').onclick = () => { isRunning ? stopTimer() : startTimer(); };
-
-        function startTimer() {
-            isRunning = true;
-            document.getElementById('start-btn').textContent = "PAUSE";
-            timerId = setInterval(async () => {
-                timeLeft--;
-                updateUI();
-                if (timeLeft <= 60) document.getElementById('timer-ring').classList.add('pulsing');
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    document.getElementById('alarm').play();
-                    if (currentUser) await syncCompletion();
-                    alert("Focus session complete.");
-                    resetTimer();
-                }
-            }, 1000);
-        }
-
-        async function syncCompletion() {
-            const userRef = doc(db, "users", currentUser.uid);
-            const snap = await getDoc(userRef);
-            const data = snap.data();
-            const today = new Date().toISOString().split('T')[0];
-            let newStreak = data.currentStreak || 0;
-
-            if (data.lastActiveDate !== today) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                newStreak = (data.lastActiveDate === yesterday.toISOString().split('T')[0]) ? newStreak + 1 : 1;
+        function updateRankUI(totalMins) {
+            let currentIdx = 0;
+            for(let i=0; i<RANKS.length; i++) {
+                if(totalMins >= RANKS[i].min) currentIdx = i;
             }
 
-            await updateDoc(userRef, {
-                totalMinutes: increment(parseInt(times.work)),
-                lastActiveDate: today,
-                currentStreak: newStreak,
-                [`history.${today}`]: increment(parseInt(times.work))
+            const current = RANKS[currentIdx];
+            const next = RANKS[currentIdx + 1] || null;
+
+            document.getElementById('rank-display-name').textContent = current.name;
+            document.getElementById('stat-total-mins').textContent = totalMins;
+
+            if (next) {
+                const diff = next.min - current.min;
+                const progress = ((totalMins - current.min) / diff) * 100;
+                document.getElementById('rank-progress-fill').style.width = `${progress}%`;
+                document.getElementById('next-rank-info').textContent = `${next.min - totalMins} MINS TO ${next.name}`;
+            } else {
+                document.getElementById('rank-progress-fill').style.width = `100%`;
+                document.getElementById('next-rank-info').textContent = "MAX RANK ACHIEVED";
+            }
+
+            // Render Trophy Room
+            const room = document.getElementById('rank-trophy-room');
+            room.innerHTML = '';
+            RANKS.forEach(r => {
+                const div = document.createElement('div');
+                div.className = `rank-item ${totalMins >= r.min ? 'unlocked' : ''}`;
+                div.innerHTML = `<span>${r.name}</span><span>${r.min}m</span>`;
+                room.appendChild(div);
             });
-            loadUserData();
         }
 
-        function stopTimer() {
-            clearInterval(timerId);
-            isRunning = false;
-            document.getElementById('start-btn').textContent = "START";
-            document.getElementById('timer-ring').classList.remove('pulsing');
-        }
+        // --- TIMER ---
+        const circle = document.getElementById('progress');
+        document.getElementById('start-btn').onclick = () => {
+            if (isRunning) {
+                clearInterval(timerId);
+                isRunning = false;
+                document.getElementById('start-btn').textContent = "START";
+            } else {
+                isRunning = true;
+                document.getElementById('start-btn').textContent = "PAUSE";
+                timerId = setInterval(async () => {
+                    timeLeft--;
+                    updateUI();
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        document.getElementById('alarm').play();
+                        await updateDoc(doc(db, "users", currentUser.uid), { totalMinutes: increment(parseInt(times.work)) });
+                        loadUserData();
+                        alert("Session complete");
+                        resetTimer();
+                    }
+                }, 1000);
+            }
+        };
 
         function resetTimer() {
-            stopTimer();
             timeLeft = times.work * 60;
+            isRunning = false;
+            document.getElementById('start-btn').textContent = "START";
             updateUI();
         }
 
@@ -311,28 +264,27 @@
             const m = Math.floor(timeLeft / 60);
             const s = timeLeft % 60;
             document.getElementById('timer-text').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
-            circle.style.strokeDashoffset = circumference - (timeLeft / (times.work * 60)) * circumference;
+            circle.style.strokeDashoffset = 754 - (timeLeft / (times.work * 60)) * 754;
         }
+
+        // Tasks
+        document.getElementById('task-input').onkeypress = (e) => {
+            if(e.key === 'Enter' && e.target.value) {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.textContent = e.target.value;
+                li.onclick = () => li.classList.toggle('completed');
+                document.getElementById('task-list').prepend(li);
+                e.target.value = '';
+            }
+        };
 
         window.toggleSettings = () => {
-            const p = document.getElementById('settings-panel');
-            p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
+            const s = document.getElementById('settings-panel');
+            s.style.display = (s.style.display === 'flex') ? 'none' : 'flex';
         };
 
-        window.saveSettings = () => {
-            times.work = document.getElementById('work-in').value;
-            times.short = document.getElementById('short-in').value;
-            times.long = document.getElementById('long-in').value;
-            resetTimer();
-            toggleSettings();
-        };
-
-        // Register PWA Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(() => {});
-        }
-
-        updateUI();
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
 </body>
 </html>
