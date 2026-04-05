@@ -1,290 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ZenStudy</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ZenStudy</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#fafaf8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fafaf8;
+  --surface: #f2f0eb;
+  --border: rgba(0,0,0,0.08);
+  --text: #1a1917;
+  --text-2: #6b6860;
+  --text-3: #a8a59e;
+  --overlay: rgba(250,250,248,0.96);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111110;
+    --surface: #1c1b19;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0ede6;
+    --text-2: #9a9690;
+    --text-3: #5a5752;
+    --overlay: rgba(17,17,16,0.97);
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Instrument Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
 
-    <style>
-        :root {
-            --bg: #ffffff;
-            --text: #000000;
-            --secondary: #f0f0f0;
-            --accent: #888888;
-            --overlay: rgba(255, 255, 255, 0.9);
-        }
+.tab-content { flex: 1; display: none; flex-direction: column; align-items: center; overflow-y: auto; padding: 0 0 40px; width: 100%; }
+.active-tab { display: flex; }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #000000;
-                --text: #ffffff;
-                --secondary: #1a1a1a;
-                --accent: #444444;
-                --overlay: rgba(0, 0, 0, 0.9);
-            }
-        }
+.top-bar {
+  width: 100%;
+  padding: 56px 28px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+.wordmark { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: -0.3px; color: var(--text); }
+.wordmark em { font-style: italic; color: var(--text-2); }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+.bottom-nav {
+  flex-shrink: 0;
+  height: 84px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item {
+  background: none; border: none;
+  color: var(--text-3);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.nav-item .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text); opacity: 0; transition: opacity 0.25s; }
+.nav-item.active { color: var(--text); }
+.nav-item.active .dot { opacity: 1; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            margin: 0; padding: 0;
-            height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
-        }
+.timer-zone { display: flex; flex-direction: column; align-items: center; padding: 10px 0 20px; flex-shrink: 0; }
+input.focus-goal {
+  background: none; border: none; outline: none;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 2.5px; text-transform: uppercase; text-align: center;
+  width: 260px; padding: 4px 0; border-bottom: 1px solid transparent;
+  margin-bottom: 4px;
+}
+input.focus-goal::placeholder { color: var(--text-3); }
 
-        /* Navigation */
-        .tab-content { 
-            flex: 1; display: none; flex-direction: column; align-items: center; 
-            padding-top: calc(60px + env(safe-area-inset-top)); 
-            overflow-y: auto; width: 100%;
-        }
-        .active-tab { display: flex; }
+.ring-wrap { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; margin: 12px 0; }
+.ring-wrap svg { position: absolute; transform: rotate(-90deg); }
+.bg-ring { fill: none; stroke: var(--surface); stroke-width: 2.5; }
+.prog-ring { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 597; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+.time-num { font-family: 'DM Serif Display', serif; font-size: 62px; letter-spacing: -3px; color: var(--text); line-height: 1; user-select: none; }
 
-        .bottom-nav {
-            height: calc(70px + env(safe-area-inset-bottom));
-            background: var(--bg); border-top: 1px solid var(--secondary);
-            display: flex; justify-content: space-around; align-items: center;
-            padding-bottom: env(safe-area-inset-bottom);
-            z-index: 50;
-        }
-        .nav-item { background: none; border: none; color: var(--text); opacity: 0.3; font-size: 11px; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { opacity: 1; }
+.phase-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--text-3); text-transform: uppercase; margin-top: 4px; }
+.ctrl-row { display: flex; gap: 12px; margin-top: 16px; }
 
-        /* Timer Styles */
-        .timer-container { position: relative; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; margin: 20px 0; }
-        svg { position: absolute; transform: rotate(-90deg); }
-        circle { fill: none; stroke-width: 4; stroke-linecap: round; }
-        .bg-circle { stroke: var(--secondary); }
-        .progress-circle { stroke: var(--text); stroke-dasharray: 754; transition: stroke-dashoffset 1s linear; }
-        .timer-display { font-size: 64px; font-weight: 200; letter-spacing: -2px; }
+.btn-primary { background: var(--text); color: var(--bg); border: none; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; padding: 14px 44px; border-radius: 40px; cursor: pointer; transition: transform 0.15s; }
+.btn-primary:active { transform: scale(0.96); }
+.btn-ghost { background: none; color: var(--text-2); border: 1px solid var(--border); font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border-radius: 40px; cursor: pointer; }
 
-        /* Progress Styles */
-        .rank-card { width: 85%; max-width: 350px; background: var(--secondary); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
-        .current-rank-name { font-size: 24px; font-weight: 800; letter-spacing: 2px; margin-bottom: 10px; }
-        .progress-bar-bg { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; margin: 15px 0; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: var(--text); width: 0%; transition: width 1s ease; }
-        
-        .rank-list { width: 85%; max-width: 350px; padding-bottom: 40px; }
-        .rank-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--secondary); opacity: 0.3; font-size: 13px; }
-        .rank-item.unlocked { opacity: 1; font-weight: 600; }
+.tasks-area { width: calc(100% - 56px); max-width: 320px; flex-shrink: 0; margin-top: 20px;}
+.tasks-head { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--text-3); text-transform: uppercase; margin-bottom: 10px; }
+#task-list { list-style: none; }
+.task-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; cursor: pointer; color: var(--text); }
+.task-item .dot-check { width: 14px; height: 14px; border: 1px solid var(--text-3); border-radius: 50%; flex-shrink: 0; }
+.task-item.done { color: var(--text-3); }
+.task-item.done .dot-check { background: var(--text-3); border-color: var(--text-3); }
+.task-item.done span { text-decoration: line-through; }
 
-        /* Standard Elements */
-        .main-btn { background: var(--text); color: var(--bg); border: none; padding: 14px 50px; font-size: 15px; font-weight: 600; border-radius: 30px; cursor: pointer; margin: 10px; }
-        .session-header input { background: none; border: none; border-bottom: 1px solid var(--secondary); color: var(--text); text-align: center; font-size: 14px; width: 250px; padding: 8px; outline: none; text-transform: uppercase; }
-        .task-section { width: 85%; max-width: 300px; margin-top: 20px; }
-        #task-input { background: var(--secondary); border: none; color: var(--text); width: 100%; padding: 12px; border-radius: 10px; outline: none; }
-        #task-list { list-style: none; padding: 0; }
-        .task-item { padding: 10px 0; border-bottom: 1px solid var(--secondary); font-size: 14px; }
-        .completed { text-decoration: line-through; opacity: 0.3; }
+.rank-page { width: 100%; padding: 0 28px; display: flex; flex-direction: column; }
+.rank-hero { background: var(--surface); border-radius: 24px; padding: 32px 24px; margin-bottom: 24px; }
+.rank-name { font-family: 'DM Serif Display', serif; font-size: 40px; letter-spacing: -1px; margin: 4px 0; color: var(--text); }
+.track-bg { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin: 12px 0; }
+.track-fill { height: 100%; background: var(--text); transition: width 1s ease; width: 0%; }
 
-        #settings-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); z-index: 100; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-    </style>
+.ladder-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); opacity: 0.2; }
+.ladder-row.lit { opacity: 1; }
+
+.settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 200; flex-direction: column; justify-content: center; align-items: center; }
+.settings-inner { width: calc(100% - 56px); max-width: 320px; }
+.settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.settings-row input { background: var(--surface); border: none; color: var(--text); font-family: 'DM Serif Display', serif; font-size: 22px; width: 64px; text-align: center; border-radius: 8px; padding: 4px; }
+
+@keyframes pulse { 50% { opacity: 0.5; } }
+.critical { animation: pulse 1s infinite; }
+</style>
 </head>
 <body>
 
-    <div id="settings-panel">
-        <h2>Settings</h2>
-        <div style="margin:10px">Focus: <input type="number" id="work-in" value="25" style="width:50px"></div>
-        <button class="main-btn" onclick="toggleSettings()">Apply</button>
-        <button id="auth-btn" style="background:none; border:none; text-decoration:underline; color:var(--text); margin-top:20px">Sign Out</button>
+<div class="settings-overlay" id="settings-panel">
+  <div class="settings-inner">
+    <div class="wordmark" style="font-size: 32px; margin-bottom: 24px;">Settings</div>
+    <div class="settings-row">
+      <label style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;">Focus Duration</label>
+      <input type="number" id="work-in" value="25">
     </div>
-
-    <div id="tab-timer" class="tab-content active-tab">
-        <div class="session-header"><input type="text" id="session-name" placeholder="FOCUS GOAL"></div>
-        <div class="timer-container">
-            <svg width="240" height="240"><circle class="bg-circle" cx="120" cy="120" r="110"></circle><circle id="progress" class="progress-circle" cx="120" cy="120" r="110"></circle></svg>
-            <div class="timer-display" id="timer-text">25:00</div>
-        </div>
-        <button class="main-btn" id="start-btn">START</button>
-        <div class="task-section">
-            <input type="text" id="task-input" placeholder="Add a task...">
-            <ul id="task-list"></ul>
-        </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 32px;">
+      <button class="btn-primary" onclick="applySettings()">Save Changes</button>
+      <button class="btn-ghost" id="auth-btn">Sign In with Google</button>
+      <button class="settings-close" onclick="toggleSettings()" style="background:none; border:none; font-family:'DM Mono'; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-3); margin-top:10px; cursor:pointer;">Close</button>
     </div>
+  </div>
+</div>
 
-    <div id="tab-progress" class="tab-content">
-        <div class="rank-card">
-            <div id="rank-display-name" class="current-rank-name">SEEKER</div>
-            <div style="font-size: 11px; opacity: 0.6;">TOTAL TIME: <span id="stat-total-mins">0</span> MINS</div>
-            <div class="progress-bar-bg"><div id="rank-progress-fill" class="progress-bar-fill"></div></div>
-            <div id="next-rank-info" style="font-size: 10px; opacity: 0.5;">250 MINS TO NEXT RANK</div>
-        </div>
-        
-        <div class="rank-list" id="rank-trophy-room">
-            </div>
+<div id="tab-timer" class="tab-content active-tab">
+  <div class="top-bar"><div class="wordmark">Zen<em>Study</em></div></div>
+  <div class="timer-zone">
+    <input class="focus-goal" type="text" id="session-name" placeholder="What are you working on?">
+    <div class="ring-wrap">
+      <svg width="200" height="200">
+        <circle class="bg-ring" cx="100" cy="100" r="95"></circle>
+        <circle id="progress" class="prog-ring" cx="100" cy="100" r="95"></circle>
+      </svg>
+      <div class="time-num" id="timer-text">25:00</div>
     </div>
-
-    <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('timer')">FOCUS</button>
-        <button class="nav-item" onclick="switchTab('progress')">RANK</button>
-        <button class="nav-item" onclick="toggleSettings()">SETTINGS</button>
+    <div class="phase-label" id="phase-label">Focus</div>
+    <div class="ctrl-row">
+      <button class="btn-primary" id="start-btn">Start</button>
+      <button class="btn-ghost" id="reset-btn">Reset</button>
     </div>
+  </div>
+  <div class="tasks-area">
+    <div class="tasks-head">Tasks</div>
+    <input type="text" id="task-input" placeholder="Add a task, press Enter" style="width:100%; background:var(--surface); border:none; padding:12px; border-radius:10px; font-family:'Instrument Sans'; font-size:14px; margin-bottom:10px; outline:none; color:var(--text);">
+    <ul id="task-list"></ul>
+  </div>
+</div>
 
-    <audio id="alarm" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<div id="tab-progress" class="tab-content">
+  <div class="top-bar"><div class="wordmark">Zen<em>Study</em></div></div>
+  <div class="rank-page">
+    <div class="rank-hero">
+      <div class="rank-sup">Current Rank</div>
+      <div class="rank-name" id="rank-display-name">Seeker</div>
+      <div class="rank-stat"><span id="stat-total-mins">0</span> min total</div>
+      <div class="track-bg"><div class="track-fill" id="rank-progress-fill"></div></div>
+      <div class="rank-next" id="next-rank-info">250 min to Apprentice</div>
+    </div>
+    <div class="ladder-title">All Ranks</div>
+    <div id="rank-trophy-room"></div>
+  </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('timer', this)"><span class="dot"></span>Focus</button>
+  <button class="nav-item" onclick="switchTab('progress', this)"><span class="dot"></span>Rank</button>
+  <button class="nav-item" onclick="toggleSettings()"><span class="dot"></span>More</button>
+</nav>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBAuig-hearPfpRAYrLS21jVRszxhzI9V4",
-            authDomain: "zenstudy-2fe64.firebaseapp.com",
-            projectId: "zenstudy-2fe64",
-            storageBucket: "zenstudy-2fe64.firebasestorage.app",
-            messagingSenderId: "650684766921",
-            appId: "1:650684766921:web:b445a2ddedce7bdcdfcb18"
-        };
+<audio id="alarm" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const RANKS = [
-            { name: "SEEKER", min: 0 },
-            { name: "APPRENTICE", min: 250 },
-            { name: "PRACTITIONER", min: 1000 },
-            { name: "SCHOLAR", min: 2500 },
-            { name: "MASTER", min: 5000 },
-            { name: "ENLIGHTENED", min: 10000 }
-        ];
+const firebaseConfig = {
+  apiKey: "AIzaSyBAuig-hearPfpRAYrLS21jVRszxhzI9V4",
+  authDomain: "zenstudy-2fe64.firebaseapp.com",
+  projectId: "zenstudy-2fe64",
+  storageBucket: "zenstudy-2fe64.firebasestorage.app",
+  messagingSenderId: "650684766921",
+  appId: "1:650684766921:web:b445a2ddedce7bdcdfcb18"
+};
 
-        let times = { work: 25 };
-        let timeLeft = 25 * 60;
-        let timerId = null;
-        let isRunning = false;
-        let currentUser = null;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-        // --- TAB SYSTEM ---
-        window.switchTab = (tab) => {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active-tab');
-            event.currentTarget.classList.add('active');
-        };
+const RANKS = [
+  { name: "Seeker", min: 0 },
+  { name: "Apprentice", min: 250 },
+  { name: "Practitioner", min: 1000 },
+  { name: "Scholar", min: 2500 },
+  { name: "Master", min: 5000 },
+  { name: "Enlightened", min: 10000 }
+];
 
-        // --- AUTH ---
-        document.getElementById('auth-btn').onclick = () => { !currentUser ? signInWithPopup(auth, provider) : signOut(auth); };
+let times = { work: 25 };
+let timeLeft = 25 * 60;
+let timerId = null;
+let isRunning = false;
+let currentUser = null;
+const CIRCUMFERENCE = 597; // 2 * PI * 95
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                loadUserData();
-            } else {
-                currentUser = null;
-                signInWithPopup(auth, provider);
-            }
-        });
+window.switchTab = (tab, el) => {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active-tab');
+  if (el) el.classList.add('active');
+};
 
-        async function loadUserData() {
-            const snap = await getDoc(doc(db, "users", currentUser.uid));
-            if (snap.exists()) {
-                updateRankUI(snap.data().totalMinutes || 0);
-            } else {
-                await setDoc(doc(db, "users", currentUser.uid), { totalMinutes: 0 });
-            }
+document.getElementById('auth-btn').onclick = () => {
+  if(!currentUser) {
+    signInWithPopup(auth, provider).catch(console.error);
+  } else {
+    signOut(auth);
+  }
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('auth-btn').textContent = "Sign Out";
+    loadUserData();
+  } else {
+    currentUser = null;
+    document.getElementById('auth-btn').textContent = "Sign In with Google";
+    updateRankUI(0);
+  }
+});
+
+async function loadUserData() {
+  const userRef = doc(db, "users", currentUser.uid);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    updateRankUI(snap.data().totalMinutes || 0);
+  } else {
+    await setDoc(userRef, { totalMinutes: 0 });
+    updateRankUI(0);
+  }
+}
+
+function updateRankUI(totalMins) {
+  let idx = 0;
+  for (let i = 0; i < RANKS.length; i++) { if (totalMins >= RANKS[i].min) idx = i; }
+  const cur = RANKS[idx];
+  const nxt = RANKS[idx + 1] || null;
+  
+  document.getElementById('rank-display-name').textContent = cur.name;
+  document.getElementById('stat-total-mins').textContent = totalMins;
+  
+  const fill = document.getElementById('rank-progress-fill');
+  const info = document.getElementById('next-rank-info');
+  
+  if (nxt) {
+    const pct = ((totalMins - cur.min) / (nxt.min - cur.min)) * 100;
+    fill.style.width = pct + '%';
+    info.textContent = (nxt.min - totalMins) + ' min to ' + nxt.name;
+  } else {
+    fill.style.width = '100%';
+    info.textContent = 'Maximum Rank Achieved';
+  }
+
+  const room = document.getElementById('rank-trophy-room');
+  room.innerHTML = RANKS.map(r => `
+    <div class="ladder-row ${totalMins >= r.min ? 'lit' : ''}">
+      <span style="font-family:'DM Serif Display'; font-size:18px;">${r.name}</span>
+      <span style="font-family:'DM Mono'; font-size:10px; color:var(--text-3);">${r.min} min</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('start-btn').onclick = () => {
+  if (isRunning) {
+    clearInterval(timerId);
+    isRunning = false;
+    document.getElementById('start-btn').textContent = 'Start';
+  } else {
+    isRunning = true;
+    document.getElementById('start-btn').textContent = 'Pause';
+    timerId = setInterval(async () => {
+      timeLeft--;
+      updateTimerUI();
+      if (timeLeft <= 0) {
+        clearInterval(timerId);
+        isRunning = false;
+        document.getElementById('start-btn').textContent = 'Start';
+        document.getElementById('alarm').play();
+        if (currentUser) {
+          await updateDoc(doc(db, "users", currentUser.uid), { totalMinutes: increment(times.work) });
+          loadUserData();
         }
+        alert('Well done. Session complete.');
+        resetTimer();
+      }
+    }, 1000);
+  }
+};
 
-        function updateRankUI(totalMins) {
-            let currentIdx = 0;
-            for(let i=0; i<RANKS.length; i++) {
-                if(totalMins >= RANKS[i].min) currentIdx = i;
-            }
+document.getElementById('reset-btn').onclick = resetTimer;
 
-            const current = RANKS[currentIdx];
-            const next = RANKS[currentIdx + 1] || null;
+function resetTimer() {
+  clearInterval(timerId);
+  isRunning = false;
+  timeLeft = times.work * 60;
+  document.getElementById('start-btn').textContent = 'Start';
+  document.getElementById('timer-text').classList.remove('critical');
+  updateTimerUI();
+}
 
-            document.getElementById('rank-display-name').textContent = current.name;
-            document.getElementById('stat-total-mins').textContent = totalMins;
+function updateTimerUI() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById('timer-text').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+  
+  const total = times.work * 60;
+  const offset = CIRCUMFERENCE - (timeLeft / total) * CIRCUMFERENCE;
+  document.getElementById('progress').style.strokeDashoffset = offset;
 
-            if (next) {
-                const diff = next.min - current.min;
-                const progress = ((totalMins - current.min) / diff) * 100;
-                document.getElementById('rank-progress-fill').style.width = `${progress}%`;
-                document.getElementById('next-rank-info').textContent = `${next.min - totalMins} MINS TO ${next.name}`;
-            } else {
-                document.getElementById('rank-progress-fill').style.width = `100%`;
-                document.getElementById('next-rank-info').textContent = "MAX RANK ACHIEVED";
-            }
+  if(timeLeft < 60 && isRunning) document.getElementById('timer-text').classList.add('critical');
+}
 
-            // Render Trophy Room
-            const room = document.getElementById('rank-trophy-room');
-            room.innerHTML = '';
-            RANKS.forEach(r => {
-                const div = document.createElement('div');
-                div.className = `rank-item ${totalMins >= r.min ? 'unlocked' : ''}`;
-                div.innerHTML = `<span>${r.name}</span><span>${r.min}m</span>`;
-                room.appendChild(div);
-            });
-        }
+document.getElementById('task-input').onkeypress = (e) => {
+  if (e.key === 'Enter' && e.target.value.trim()) {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.innerHTML = '<span class="dot-check"></span><span>' + e.target.value.trim() + '</span>';
+    li.onclick = () => li.classList.toggle('done');
+    document.getElementById('task-list').prepend(li);
+    e.target.value = '';
+  }
+};
 
-        // --- TIMER ---
-        const circle = document.getElementById('progress');
-        document.getElementById('start-btn').onclick = () => {
-            if (isRunning) {
-                clearInterval(timerId);
-                isRunning = false;
-                document.getElementById('start-btn').textContent = "START";
-            } else {
-                isRunning = true;
-                document.getElementById('start-btn').textContent = "PAUSE";
-                timerId = setInterval(async () => {
-                    timeLeft--;
-                    updateUI();
-                    if (timeLeft <= 0) {
-                        clearInterval(timerId);
-                        document.getElementById('alarm').play();
-                        await updateDoc(doc(db, "users", currentUser.uid), { totalMinutes: increment(parseInt(times.work)) });
-                        loadUserData();
-                        alert("Session complete");
-                        resetTimer();
-                    }
-                }, 1000);
-            }
-        };
+window.applySettings = () => {
+  const v = parseInt(document.getElementById('work-in').value) || 25;
+  times.work = v;
+  resetTimer();
+  toggleSettings();
+};
 
-        function resetTimer() {
-            timeLeft = times.work * 60;
-            isRunning = false;
-            document.getElementById('start-btn').textContent = "START";
-            updateUI();
-        }
+window.toggleSettings = () => {
+  const s = document.getElementById('settings-panel');
+  s.style.display = s.style.display === 'flex' ? 'none' : 'flex';
+};
 
-        function updateUI() {
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            document.getElementById('timer-text').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
-            circle.style.strokeDashoffset = 754 - (timeLeft / (times.work * 60)) * 754;
-        }
-
-        // Tasks
-        document.getElementById('task-input').onkeypress = (e) => {
-            if(e.key === 'Enter' && e.target.value) {
-                const li = document.createElement('li');
-                li.className = 'task-item';
-                li.textContent = e.target.value;
-                li.onclick = () => li.classList.toggle('completed');
-                document.getElementById('task-list').prepend(li);
-                e.target.value = '';
-            }
-        };
-
-        window.toggleSettings = () => {
-            const s = document.getElementById('settings-panel');
-            s.style.display = (s.style.display === 'flex') ? 'none' : 'flex';
-        };
-
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-    </script>
+updateTimerUI();
+</script>
 </body>
 </html>
